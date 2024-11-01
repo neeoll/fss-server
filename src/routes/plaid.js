@@ -4,6 +4,7 @@ import { Configuration, PlaidApi, PlaidEnvironments } from 'plaid';
 import axios from "axios"
 import User from "../db/models/User.js"
 import jsonwebtoken from 'jsonwebtoken'
+import mongoose from "mongoose";
 
 const configuration = new Configuration({
   basePath: PlaidEnvironments[process.env.PLAID_ENV],
@@ -19,8 +20,8 @@ const plaidClient = new PlaidApi(configuration)
 
 const plaidRouter = Router()
   .post("/createLinkToken", async (req, res) => {
-    const decoded = jsonwebtoken.decode(req.body.token)
-    const user = await User.findOne({ _id: decoded.id })
+    const { id } = req.body
+    const user = await User.findOne({ _id: new mongoose.Types.ObjectId(id) })
     if (!user) return res.status(401).json({ error: "Unauthorized" })
 
     const request = {
